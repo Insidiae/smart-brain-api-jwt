@@ -6,6 +6,7 @@ const knex = require("knex");
 
 const register = require("./controllers/register");
 const signin = require("./controllers/signin");
+const auth = require("./controllers/authorization");
 const profile = require("./controllers/profile");
 const image = require("./controllers/image");
 
@@ -22,17 +23,20 @@ app.use(express.json()); // latest version of exressJS now comes with Body-Parse
 app.get("/", (req, res) => {
   res.send("it do be working tho?");
 });
-app.post("/signin", signin.handleSignin(db, bcrypt));
+app.post("/signin", signin.handleAuthentication(db, bcrypt));
 app.post("/register", (req, res) => {
   register.handleRegister(req, res, db, bcrypt);
 });
-app.get("/profile/:id", (req, res) => {
+app.get("/profile/:id", auth.requireAuth, (req, res) => {
   profile.handleProfileGet(req, res, db);
 });
-app.put("/image", (req, res) => {
+app.post("/profile/:id", auth.requireAuth, (req, res) => {
+  profile.handleProfileUpdate(req, res, db);
+});
+app.put("/image", auth.requireAuth, (req, res) => {
   image.handleImage(req, res, db);
 });
-app.post("/imageurl", (req, res) => {
+app.post("/imageurl", auth.requireAuth, (req, res) => {
   image.handleApiCall(req, res);
 });
 
